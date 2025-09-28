@@ -3,12 +3,11 @@ pipeline {
 
     tools {
         jdk 'java17'
-        maven 'Maven3'   // match the exact name from Jenkins Global Tool Config
+        maven 'Maven3'
     }
 
     environment {
-        // SONARQUBE SERVER NAME must match Jenkins "Configure System" > SonarQube installations
-        SONARQUBE_SERVER = 'MySonarQube'
+        SONARQUBE_SERVER = 'MySonarQube' // Jenkins SonarQube server name
     }
 
     stages {
@@ -25,11 +24,12 @@ pipeline {
             }
         }
 
-        stage("SonarQube Analysis"){
+        stage('SonarQube Analysis') {
             steps {
                 script {
-                    withSonarQubeEnv(credentialsId: 'jenkins-sonarqube-token) {
-                    sh "mvn sonar:sonar"
+                    withSonarQubeEnv(SONARQUBE_SERVER) {
+                        sh 'mvn sonar:sonar'
+                    }
                 }
             }
         }
