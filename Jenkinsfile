@@ -33,5 +33,16 @@ pipeline {
                 }
             }
         }
+
+        stage('Quality Gate') {
+            steps {
+                script {
+                    // This waits for SonarQube to finish analysis and checks quality gate status
+                    timeout(time: 2, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: true
+                    }
+                }
+            }
+        }
     }
 }
