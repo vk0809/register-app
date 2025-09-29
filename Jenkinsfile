@@ -7,12 +7,14 @@ pipeline {
     }
 
     environment {
-            APP_NAME = "register-app-pipeline"
-            RELEASE = "1.0.0"
-            DOCKER_USER = "vk0908"
-            DOCKER_PASS = 'dockerhub'
-            IMAGE_NAME = "${DOCKER_USER}" + "/" + "${APP_NAME}"
-            IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
+        APP_NAME = "register-app-pipeline"
+        RELEASE = "1.0.0"
+        DOCKER_USER = "vk0908"
+        IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
+        IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
+
+        SONARQUBE_SERVER = "MySonarQube"   // must match Jenkins SonarQube config
+        DOCKER_CREDENTIALS = "docker-cred-id" // Jenkins credentials ID for Docker Hub
     }
 
     stages {
@@ -32,7 +34,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 script {
-                    withSonarQubeEnv(SONARQUBE_SERVER) {
+                    withSonarQubeEnv("${SONARQUBE_SERVER}") {
                         sh 'mvn sonar:sonar'
                     }
                 }
@@ -42,9 +44,26 @@ pipeline {
         stage('Quality Gate') {
             steps {
                 script {
-                    // This waits for SonarQube to finish analysis and checks quality gate status
                     timeout(time: 2, unit: 'MINUTES') {
                         waitForQualityGate abortPipeline: true
+                    }
+                }
+            }
+        }
+
+        stage('Build & Push Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS}",
+                                                     usernameVariable: 'DOCKER_USER',
+                                                     passwordVariable: 'DOCKER_PASS')]) {
+                        sh """
+                            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                            docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                            docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+                            docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                            docker push ${IMAGE_NAME}:latest
+                        """
                     }
                 }
             }
