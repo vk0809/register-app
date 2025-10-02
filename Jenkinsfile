@@ -21,7 +21,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/your-repo/your-project.git'
+                    url: 'https://github.com/vk0809/register-app.git'
             }
         }
 
