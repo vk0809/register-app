@@ -2,12 +2,11 @@ pipeline {
     agent any
 
     tools {
-        jdk 'java17'          // This must match the JDK name in Jenkins Global Tool Config
-        maven 'Maven3'        // This must match the Maven installation name in Jenkins Global Tool Config
+        jdk 'java17'          // Must match Jenkins Global Tool Config
+        maven 'Maven3'        // Must match Jenkins Global Tool Config
     }
 
     environment {
-        // Example: set artifact name or environment vars
         APP_NAME = "my-app"
     }
 
@@ -22,7 +21,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/vk0809/register-app.git'
+                    url: 'https://github.com/your-repo/your-project.git'
             }
         }
 
@@ -44,7 +43,8 @@ pipeline {
             }
             post {
                 success {
-                    archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+                    // FIXED: This will match jars in server/target/ or any submodule
+                    archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
                 }
             }
         }
@@ -55,7 +55,7 @@ pipeline {
             }
             steps {
                 echo "Deploying ${APP_NAME}..."
-                // Example deploy step, replace with your own (Docker, SSH, k8s, etc.)
+                // Replace with your deployment steps (Docker, SSH, Kubernetes, etc.)
                 sh 'echo "Deployment step goes here"'
             }
         }
@@ -63,10 +63,10 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline executed successfully!'
+            echo '✅ Pipeline executed successfully!'
         }
         failure {
-            echo 'Pipeline failed. Please check logs.'
+            echo '❌ Pipeline failed. Please check logs.'
         }
     }
 }
