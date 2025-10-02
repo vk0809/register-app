@@ -18,13 +18,6 @@ pipeline {
             }
         }
 
-        stage('Checkout') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/vk0809/register-app.git'
-            }
-        }
-
         stage('Build') {
             steps {
                 sh 'mvn clean install -DskipTests'
@@ -43,7 +36,7 @@ pipeline {
             }
             post {
                 success {
-                    // FIXED: This will match jars in server/target/ or any submodule
+                    // Archive jars from any module (avoids earlier error)
                     archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
                 }
             }
@@ -55,7 +48,6 @@ pipeline {
             }
             steps {
                 echo "Deploying ${APP_NAME}..."
-                // Replace with your deployment steps (Docker, SSH, Kubernetes, etc.)
                 sh 'echo "Deployment step goes here"'
             }
         }
